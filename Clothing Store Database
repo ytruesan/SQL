@@ -1,0 +1,10 @@
+CREATE TABLE stock (id INTEGER PRIMARY KEY, item TEXT, price INTEGER, total_items INTEGER, colors INTEGER);
+
+INSERT INTO stock VALUES (1, "shirt", 20, 15, 3);
+INSERT INTO stock VALUES (2, "dress", 30, 15, 2);
+INSERT INTO stock VALUES (3, "pants", 30, 15, 1);
+INSERT INTO stock VALUES (4, "sweater", 20, 10, 2);
+
+SELECT price FROM stock ORDER BY price;
+
+SELECT MAX(total_items) FROM stock;
