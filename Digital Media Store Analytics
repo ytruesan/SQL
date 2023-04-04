@@ -1,0 +1,130 @@
+#In this SQL, I worked with a dataset representing a digital media store which included tables for artists, albums, media tracks, invoices, and customers. 
+#I then proceeded to answer questions regarding the media store by analysing the data.
+
+#1. Show Customers (their full names, customer ID, and country) who are not in the US.
+SELECT FirstName, LastName, CustomerId, Country 
+    FROM customers 
+    WHERE Country<>'USA';
+
+#2. Show only the Customers from Brazil.
+SELECT * FROM customers
+    WHERE Country='Brazil';
+
+#3. Find the Invoices of customers who are from Brazil. The resulting table should show the customer's full name, Invoice ID, Date of the invoice, and billing country.
+SELECT customers.FirstName, customers.LastName, invoices.InvoiceId, invoices.InvoiceDate,invoices.BillingCountry
+    FROM invoices
+    JOIN customers
+    ON customers.CustomerId=invoices.CustomerId
+    WHERE customers.Country='Brazil';
+
+#4. Show the Employees who are Sales Agents.
+SELECT * FROM employees
+    WHERE Title='Sales Support Agent';
+
+#5. Find a unique/distinct list of billing countries from the Invoice table.
+SELECT DISTINCT(BillingCountry) FROM invoices;
+
+#6. Provide a query that shows the invoices associated with each sales agent. The resulting table should include the Sales Agent's full name.
+SELECT employees.FirstName, employees.LastName, invoices.InvoiceId 
+     FROM employees
+     JOIN customers
+     ON customers.SupportRepId=employees.EmployeeId
+     JOIN invoices
+     ON customers.CustomerId=invoices.CustomerId
+     WHERE employees.Title='Sales Support Agent';
+
+#7. Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
+SELECT invoices.Total, customers.FirstName, customers.LastName, customers.Country, employees.LastName, employees.FirstName
+    FROM customers
+    JOIN invoices
+    ON customers.CustomerId=invoices.CustomerId
+    JOIN employees
+    ON customers.SupportRepId=employees.EmployeeId;
+
+#8. How many Invoices were there in 2009?
+SELECT COUNT(*) 
+    FROM invoices
+    WHERE InvoiceDate LIKE '2009%';
+
+#9. What are the total sales for 2009?
+SELECT SUM(Total) 
+    FROM invoices
+    WHERE InvoiceDate LIKE '2009%';
+
+#10. Write a query that includes the purchased track name with each invoice line ID.
+SELECT tracks.Name, invoice_items.InvoiceLineId
+    FROM tracks
+    JOIN invoice_items
+    ON tracks.TrackId=invoice_items.TrackId;
+
+#11. Write a query that includes the purchased track name AND artist name with each invoice line ID.
+SELECT tracks.Name, artists.Name, invoice_items.InvoiceLineId
+    FROM tracks
+    JOIN invoice_items
+    ON tracks.TrackId=invoice_items.TrackId
+    JOIN albums
+    ON albums.AlbumId=tracks.AlbumId
+    JOIN artists
+    ON artists.ArtistId=albums.ArtistId;
+
+#12. Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
+SELECT tracks.Name AS 'Track Name', albums.Title AS 'Album Title', media_types.Name AS 'Media Type', genres.Name AS 'Genre'
+    FROM tracks
+    JOIN albums
+    ON tracks.AlbumId=albums.AlbumId
+    JOIN media_types
+    ON tracks.MediaTypeId=media_types.MediaTypeId
+    JOIN genres
+    ON tracks.GenreId=genres.GenreId;
+
+#13. Show the total sales made by each sales agent.
+SELECT employees.FirstName, employees.LastName, ROUND(SUM(invoices.Total),2) AS 'Total Sales'
+    FROM employees
+    JOIN customers
+    ON employees.EmployeeId=customers.SupportRepId
+    JOIN invoices
+    ON customers.CustomerId=invoices.CustomerId
+    WHERE employees.Title='Sales Support Agent'
+    GROUP BY employees.FirstName;
+
+#14. Which sales agent made the most dollars in sales in 2009?
+SELECT employees.FirstName, employees.LastName
+    FROM employees
+    JOIN customers
+    ON employees.EmployeeId=customers.SupportRepId
+    JOIN invoices
+    ON customers.CustomerId=invoices.CustomerId
+    WHERE employees.Title='Sales Support Agent'
+    AND invoices.InvoiceDate LIKE '2009%'
+    GROUP BY employees.FirstName
+    ORDER BY SUM(invoices.Total) DESC
+    LIMIT 1;
+    
+#15. Find the total made from each genre and how many units were sold. Order from the genre that made the least to the genre that made the most. 
+SELECT genres.Name, SUM(invoice_items.Quantity), ROUND(SUM(invoices.Total),2)
+    FROM genres
+    JOIN tracks
+    ON tracks.GenreId=genres.GenreId
+    JOIN invoice_items
+    ON invoice_items.TrackId=tracks.TrackId
+    JOIN invoices
+    ON invoices.InvoiceId=invoice_items.InvoiceId
+    GROUP BY genres.Name
+    ORDER BY ROUND(SUM(invoices.Total),2) DESC
+   
+#16. Find the country that bought the most rock tracks. 
+SELECT invoices.BillingCountry AS 'Country', SUM(invoice_items.Quantity) AS 'Total Tracks'
+    FROM invoices
+    JOIN invoice_items 
+    ON invoices.InvoiceId=invoice_items.InvoiceId
+    JOIN tracks
+    ON tracks.TrackId=invoice_items.TrackId
+    JOIN genres
+    ON genres.GenreId=tracks.GenreId
+    WHERE genres.Name='Rock'
+    GROUP BY invoices.BillingCountry
+    ORDER BY SUM(invoice_items.Quantity) DESC
+    LIMIT 1;
+
+
+
